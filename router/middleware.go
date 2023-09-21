@@ -2,7 +2,7 @@ package router
 
 import "net/http"
 
-type MiddlewareFunc func(http.Handler) http.Handler
+type MiddlewareFunc func(http.HandlerFunc) http.HandlerFunc
 
 func (router *Router) Use(mwm ...MiddlewareFunc) {
 	mw := router.middleware
@@ -10,7 +10,7 @@ func (router *Router) Use(mwm ...MiddlewareFunc) {
 	router.middleware = mw
 }
 
-func applyMiddleware(function http.Handler, mwm ...MiddlewareFunc) http.Handler {
+func applyMiddleware(function http.HandlerFunc, mwm ...MiddlewareFunc) http.HandlerFunc {
 	for _, mw := range mwm {
 		function = mw(function)
 	}

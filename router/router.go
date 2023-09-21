@@ -5,8 +5,8 @@ import (
 )
 
 type Router struct {
-	NotFoundHandler http.Handler
-	routes          []Route
+	NotFoundHandler http.HandlerFunc
+	Tree            *Node
 	middleware      []MiddlewareFunc
 }
 
@@ -17,19 +17,21 @@ func (router *Router) addRoute(method string, path string, handler http.HandlerF
 		handler:    handler,
 		middleware: mwm,
 	}
-	router.routes = append(router.routes, route)
+	arrayPath := []rune(path)
+	Insert(arrayPath, router.Tree, &route)
 }
 
 func (router *Router) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	for _, route := range router.routes {
-		if route.method == request.Method && route.path == request.URL.Path {
-			middleware := append(route.middleware, router.middleware...)
-			handler := applyMiddleware(route.handler, middleware...)
-			handler.ServeHTTP(writer, request)
-			return
-		}
+
+	arrayPath := []rune(request.URL.Path)
+	route := Search(arrayPath, router.Tree)
+	if route != nil {
+		middleware := append(route.middleware, router.middleware...)
+		handler := applyMiddleware(route.handler, middleware...)
+		handler(writer, request)
+		return
 	}
-	router.NotFoundHandler.ServeHTTP(writer, request)
+	router.NotFoundHandler(writer, request)
 }
 
 func (router *Router) Get(path string, handler http.HandlerFunc, mwm ...MiddlewareFunc) {
@@ -44,6 +46,7 @@ func (router *Router) Delete(path string, handler http.HandlerFunc, mwm ...Middl
 func (router *Router) Put(path string, handler http.HandlerFunc, mwm ...MiddlewareFunc) {
 	router.addRoute("PUT", path, handler, mwm...)
 }
-func (router *Router) Include(routerA *Router) {
-	router.routes = append(router.routes, routerA.routes...)
-}
+
+// func (router *Router) Include(routerA *Router) {
+// 	router.routes = append(router.routes, routerA.routes...)
+// }

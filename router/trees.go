@@ -11,6 +11,7 @@ type Node struct {
 func Insert(path []rune, root *Node, route *Route) {
 	len_1 := len(root.CurrPath)
 	len_2 := len(path)
+	fmt.Println(root.route)
 	if len_1 == 0 {
 		root.route = route
 		root.CurrPath = path
@@ -62,19 +63,19 @@ func Search(path []rune, root *Node) *Route {
 	len_1 := len(root.CurrPath)
 	len_2 := len(path)
 	i := commonPrefix(root.CurrPath, path, len_1, len_2)
+	fmt.Println(root, path)
 	if len_2-i == 0 {
-		fmt.Println(root.route)
 		return root.route
 	}
 	if i == 0 {
 		return nil
 	}
-	val := root.PathLetter[path[i:][0]]
+	path1 := path[i:]
+	val := root.PathLetter[path1[0]]
 	if val == nil {
 		return nil
 	}
-	return Search(path[i:], val)
-
+	return Search(path1, val)
 }
 func commonPrefix(path1 []rune, path2 []rune, len_1 int, len_2 int) int {
 	i := 0
